@@ -258,6 +258,7 @@ public:
 		delete []elem;
 		Mod=Omod;
 		capa=Mod*frac;
+		Size=0;
 		elem=new node *[Mod];
 		for (int i=0; i<Mod; ++i) {
 			elem[i]=NULL;
