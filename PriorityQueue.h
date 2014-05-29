@@ -4,7 +4,6 @@
 
 #include "ArrayList.h"
 #include "ElementNotExist.h"
-#include <algorithm>
 
 /**
 * This is a priority queue based on a priority priority queue. The
@@ -63,30 +62,57 @@ public:
 // }
 
 /*----------------------------------------------------------------------*/
-
 template <class V, class C = Less<V> >
 class PriorityQueue
 {
 	ArrayList<V> data;
+	ArrayList<bool> tag;
+	int Size;
 	C cmp;
+
+	void swap1(V &a, V &b) {
+		V c=a;
+		a=b;
+		b=c;
+	}
+
+	void swap2(bool &a, bool &b) {
+		bool c=a;
+		a=b;
+		b=c;
+	}
 
 public:
     class Iterator
     {
 		PriorityQueue<V,C> *a;
-		int pos, last;
+		int pos, last, num;
+
+		void swap1(V &a, V &b) {
+			V c=a;
+			a=b;
+			b=c;
+		}
+
+		void swap2(bool &a, bool &b) {
+			bool c=a;
+			a=b;
+			b=c;
+		}
+
     public:
 		Iterator(PriorityQueue<V,C> *x) {
 		   a=x;
 		   pos=-1;
 		   last=-1;
+		   num=a->Size;
 		}
 
         /**
          * TODO Returns true if the iteration has more elements.
          */
         bool hasNext() {
-			return pos+1<a->data.Size;
+			return num>0;
 		}
 
         /**
@@ -96,7 +122,9 @@ public:
         const V &next() {
 			if (!hasNext()) throw ElementNotExist("\nElement Not Exist\n");
 			++pos;
+			while (!a->tag.elem[pos]) ++pos;
 			last=pos;
+			--num;
 			return a->data.elem[pos];
 		}
 
@@ -112,24 +140,18 @@ public:
 			if (last==-1) throw ElementNotExist("\nElement Not Exist\n");
 			int i=last;
 			while (i*2+1<a->data.Size) {
-				if (i*2+2>=a->data.Size||a->cmp(a->data.elem[i*2+1],a->data.elem[i*2+2])) {
-					swap(a->data.elem[i],a->data.elem[i*2+1]);
+				if (i*2+2>=a->data.Size||a->tag.elem[i*2+2]==0||a->cmp(a->data.elem[i*2+1],a->data.elem[i*2+2])) {
+					swap1(a->data.elem[i],a->data.elem[i*2+1]);
+					swap2(a->tag.elem[i],a->tag.elem[i*2+1]);
 					i=i*2+1;
 				} else {
-					swap(a->data.elem[i],a->data.elem[i*2+2]);
+					swap1(a->data.elem[i],a->data.elem[i*2+2]);
+					swap2(a->tag.elem[i],a->tag.elem[i*2+2]);
 					i=i*2+2;
 				}
 			}
-			swap(a->data.elem[i],a->data.elem[a->data.Size-1]);
-			if (i!=a->data.Size-1) {
-				while (i) {
-					if (a->cmp(a->data.elem[i],a->data.elem[(i-1)>>1])) {
-						swap(a->data.elem[i],a->data.elem[(i-1)>>1]);
-						i=(i-1)/2;
-					} else break;
-				}
-			}
-			--a->data.Size;
+			a->tag.elem[i]=0;
+			--a->Size;
 			last=-1;
 			--pos;
 		}
@@ -140,6 +162,8 @@ public:
      */
     PriorityQueue() {
 		data=ArrayList<V>();
+		tag=ArrayList<bool>();
+		Size=0;
 	}
 
     /**
@@ -147,6 +171,7 @@ public:
      */
     ~PriorityQueue() {
 		data.clear();
+		tag.clear();
 	}
 
     /**
@@ -155,6 +180,9 @@ public:
     PriorityQueue &operator=(const PriorityQueue &x) {
 		data.clear();
 		data=x.data;
+		tag.clear();
+		tag=x.tag;
+		Size=x.Size;
 		return *this;
 	}
 
@@ -163,6 +191,8 @@ public:
      */
     PriorityQueue(const PriorityQueue &x) {
 		data=x.data;
+		tag=x.tag;
+		Size=x.Size;
 	}
 
 	/**
@@ -176,13 +206,18 @@ public:
 			int j=i;
 			while (j*2+1<data.Size) {
 				if (j*2+2<data.Size&&cmp(data.elem[j*2+2],data.elem[j])&&cmp(data.elem[j*2+2],data.elem[j*2+1])) {
-					swap(data.elem[j],data.elem[j*2+2]);
+					swap1(data.elem[j],data.elem[j*2+2]);
 					j=j*2+2;
 				} else if (cmp(data.elem[j*2+1],data.elem[j])) {
-					swap(data.elem[j],data.elem[j*2+1]);
+					swap1(data.elem[j],data.elem[j*2+1]);
 					j=j*2+1;
 				} else break;
 			}
+		}
+		Size=data.Size;
+		tag=ArrayList<bool> ();
+		for (int i=0; i<Size; ++i) {
+			tag.add(tag.Size,1);
 		}
 	}
 
@@ -198,6 +233,8 @@ public:
      */
     void clear() {
 		data.clear();
+		tag.clear();
+		Size=0;
 	}
 
     /**
@@ -206,7 +243,7 @@ public:
      * @throw ElementNotExist
      */
     const V &front() const {
-		if (data.Size==0) throw ElementNotExist("\nElement Not Exist\n");
+		if (Size==0) throw ElementNotExist("\nElement Not Exist\n");
 		return data.elem[0];
 	}
 
@@ -214,7 +251,7 @@ public:
      * TODO Returns true if this PriorityQueue contains no elements.
      */
     bool empty() const {
-		return data.Size==0;
+		return Size==0;
 	}
 
     /**
@@ -222,12 +259,15 @@ public:
      */
     void push(const V &value) {
 		data.add(data.Size,value);
+		tag.add(tag.Size,1);
 		int i=data.Size-1;
 		while (i) {
-			if (cmp(data.elem[i],data.elem[(i-1)>>1])) {
-				swap(data.elem[i],data.elem[(i-1)>>1]);
+			if (cmp(data.elem[i],data.elem[(i-1)>>1])||tag.elem[(i-1)>>1]==0) {
+				swap1(data.elem[i],data.elem[(i-1)>>1]);
+				swap2(tag.elem[i],tag.elem[(i-1)>>1]);
 			} else break;
 		}
+		++Size;
 	}
 
     /**
@@ -236,34 +276,28 @@ public:
      * @throw ElementNotExist
      */
     void pop() {
-		if (data.Size==0) throw ElementNotExist("\nElement Not Exist\n");
+		if (Size==0) throw ElementNotExist("\nElement Not Exist\n");
 		int i=0;
 		while (i*2+1<data.Size) {
-			if (i*2+2>=data.Size||cmp(data.elem[i*2+1],data.elem[i*2+2])) {
-				swap(data.elem[i],data.elem[i*2+1]);
+			if (tag.elem[i*2+1]&&(i*2+2>=data.Size||tag.elem[i*2+2]==0||cmp(data.elem[i*2+1],data.elem[i*2+2]))) {
+				swap1(data.elem[i],data.elem[i*2+1]);
+				swap2(tag.elem[i],tag.elem[i*2+1]);
 				i=i*2+1;
-			} else {
-				swap(data.elem[i],data.elem[i*2+2]);
+			} else if (i*2+2<data.Size&&tag.elem[i*2+2]) {
+				swap1(data.elem[i],data.elem[i*2+2]);
+				swap2(tag.elem[i],tag.elem[i*2+2]);
 				i=i*2+2;
-			}
+			} else break;
 		}
-		swap(data.elem[i],data.elem[data.Size-1]);
-		if (i!=data.Size-1) {
-			while (i) {
-				if (cmp(data.elem[i],data.elem[(i-1)>>1])) {
-					swap(data.elem[i],data.elem[(i-1)>>1]);
-					i=(i-1)/2;
-				} else break;
-			}
-		}
-		--data.Size;
+		tag.elem[i]=0;
+		--Size;
 	}
 
     /**
      * TODO Returns the number of key-value mappings in this map.
      */
     int size() const {
-		return data.Size;
+		return Size;
 	}
 };
 
