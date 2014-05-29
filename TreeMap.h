@@ -3,6 +3,7 @@
 #define __TREEMAP_H
 
 #include "ElementNotExist.h"
+#include <cstdlib>
 
 /**
  * TreeMap is the balanced-tree implementation of map. The iterators must
@@ -87,20 +88,20 @@ public:
 		if (x->son[1]!=NULL) dfs(tmp,x->son[1]);
 	}
 
-	bool find(node *cur, const K &key) const {
+	bool find1(node *cur, const K &key) const {
 		if (cur==NULL) return 0;
 		if (cur->data.getKey()==key) return 1;
 		if (cur->data.getKey()<key) {
-			return find(cur->son[1],key);
+			return find1(cur->son[1],key);
 		} else {
-			return find(cur->son[0],key);
+			return find1(cur->son[0],key);
 		}
 	}
 
-	bool find(node *cur, const V &value) const {
+	bool find2(node *cur, const V &value) const {
 		if (cur==NULL) return 0;
 		if (cur->data.getValue()==value) return 1;
-		return find(cur->son[0],value)|find(cur->son[1],value);
+		return find2(cur->son[0],value)|find2(cur->son[1],value);
 	}
 
 	V &keyValue(node *cur, K key) const {
@@ -115,12 +116,14 @@ public:
 	void insert(node *cur, Entry x) {
 		node *tmp=NULL;
 		if (cur==NULL) {
+			++Size;
 			tmp=new node(NULL,x,rand());
 			root=tmp;
 		} else {
-			if (cur->data.getKey()>x.getKey()) {
+			if (x.getKey()<cur->data.getKey()) {
 				if (cur->son[0]==NULL) {
 					tmp=new node(cur,x,rand());
+					++Size;
 					cur->son[0]=tmp;
 				} else {
 					insert(cur->son[0],x);
@@ -128,6 +131,7 @@ public:
 			} else if (cur->data.getKey()<x.getKey()) {
 				if (cur->son[1]==NULL) {
 					tmp=new node(cur,x,rand());
+					++Size;
 					cur->son[1]=tmp;
 				} else {
 					insert(cur->son[1],x);
@@ -162,7 +166,7 @@ public:
 				root=NULL;
 			}
 			delete cur;
-		} else if (cur->data.getKey()>key) {
+		} else if (key<cur->data.getKey()) {
 			del(cur->son[0],key);
 		} else {
 			del(cur->son[1],key);
@@ -278,14 +282,14 @@ public:
      * TODO Returns true if this map contains a mapping for the specified key.
      */
     bool containsKey(const K &key) const {
-		return find(root,key);
+		return find1(root,key);
 	}
 
     /**
      * TODO Returns true if this map maps one or more keys to the specified value.
      */
     bool containsValue(const V &value) const {
-		return find(root,value);
+		return find2(root,value);
 	}
 
     /**
@@ -310,7 +314,6 @@ public:
      */
     void put(const K &key, const V &value) {
 		insert(root,Entry(key,value));
-		++Size;
 	}
 
     /**
