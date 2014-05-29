@@ -266,6 +266,7 @@ public:
 				swap1(data.elem[i],data.elem[(i-1)>>1]);
 				swap2(tag.elem[i],tag.elem[(i-1)>>1]);
 			} else break;
+			i=(i-1)>>1;
 		}
 		++Size;
 	}
