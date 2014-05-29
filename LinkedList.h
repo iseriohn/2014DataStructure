@@ -2,8 +2,6 @@
 #ifndef __LINKEDLIST_H
 #define __LINKEDLIST_H
 
-#include <iostream>
-#include <cstdio>
 #include "IndexOutOfBound.h"
 #include "ElementNotExist.h"
 
