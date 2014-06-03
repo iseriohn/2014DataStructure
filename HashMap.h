@@ -4,6 +4,7 @@
 #define __HASHMAP_H
 
 #include "ElementNotExist.h"
+#include<ctime>
 
 /**
  * HashMap is a map implemented by hashing. Also, the 'capacity' here means the
