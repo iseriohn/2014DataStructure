@@ -95,11 +95,13 @@ public:
      * TODO Assignment operator
      */
     ArrayList& operator=(const ArrayList<T> &x) {
-		delete []elem;
-		Size=x.Size;
-		capa=x.capa;
-		elem=new T[capa];
-		for (int i=0; i<Size; ++i) elem[i]=x.elem[i];
+		if (this!=&x) {
+			delete []elem;
+			Size=x.Size;
+			capa=x.capa;
+			elem=new T[capa];
+			for (int i=0; i<Size; ++i) elem[i]=x.elem[i];
+		}
 		return *this;
 	}
 
