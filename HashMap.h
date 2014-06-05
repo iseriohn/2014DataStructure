@@ -195,25 +195,27 @@ public:
      * TODO Assignment operator
      */
     HashMap &operator=(const HashMap &x) {
-		for (int i=0; i<Mod; ++i) {
-			node *cur=elem[i];
-			while (cur!=NULL) {
-				node *tmp=cur->next;
-				delete cur;
-				cur=tmp;
+		if (this!=&x) {
+			for (int i=0; i<Mod; ++i) {
+				node *cur=elem[i];
+				while (cur!=NULL) {
+					node *tmp=cur->next;
+					delete cur;
+					cur=tmp;
+				}
 			}
-		}
-		delete []elem;
-		Mod=x.Mod;
-		capa=x.capa;
-		Size=x.Size;
-		elem=new node *[Mod];
-		for (int i=0; i<Mod; ++i) {
-			elem[i]=NULL;
-			node *cur=elem[i];
-			for (node *tmp=x.elem[i]; tmp!=NULL; tmp=tmp->next) {
-				cur=new node(tmp->data,elem[i]);
-				elem[i]=cur;
+			delete []elem;
+			Mod=x.Mod;
+			capa=x.capa;
+			Size=x.Size;
+			elem=new node *[Mod];
+			for (int i=0; i<Mod; ++i) {
+				elem[i]=NULL;
+				node *cur=elem[i];
+				for (node *tmp=x.elem[i]; tmp!=NULL; tmp=tmp->next) {
+					cur=new node(tmp->data,elem[i]);
+					elem[i]=cur;
+				}
 			}
 		}
 		return *this;
