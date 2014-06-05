@@ -122,13 +122,15 @@ public:
      * TODO Assignment operator
      */
     Deque& operator=(const Deque<T> & x) {
-		delete []elem;
-		Size=x.Size;
-		capa=x.capa;
-		head=x.head;
-		tail=x.tail;
-		elem=new T[capa];
-		for (int i=head; i<=tail; ++i) elem[mod(i,capa)]=x.elem[mod(i,capa)];
+		if (this!=&x) {
+			delete []elem;
+			Size=x.Size;
+			capa=x.capa;
+			head=x.head;
+			tail=x.tail;
+			elem=new T[capa];
+			for (int i=head; i<=tail; ++i) elem[mod(i,capa)]=x.elem[mod(i,capa)];
+		}
 		return *this;
 	}
 
