@@ -119,19 +119,27 @@ public:
      * TODO Assignment operator
      */
     LinkedList& operator=(const LinkedList &c) {
-		front=NULL;
-		rear=NULL;
-		node *tmp=NULL;
-		for (node *cur=c.front; cur!=NULL; cur=cur->next) {
-			rear=new node(cur->data,tmp,NULL);
-			if (tmp!=NULL) {
-				tmp->next=rear;
-			} else {
-				front=rear;
+		if (this!=&c) {
+			node *cur=front;
+			while (cur!=NULL) {
+				node *tmp=cur->next;
+				delete cur;
+				cur=tmp;
 			}
-			tmp=rear;
+			front=NULL;
+			rear=NULL;
+			node *tmp=NULL;
+			for (node *cur=c.front; cur!=NULL; cur=cur->next) {
+				rear=new node(cur->data,tmp,NULL);
+				if (tmp!=NULL) {
+					tmp->next=rear;
+				} else {
+					front=rear;
+				}
+				tmp=rear;
+			}
+			Size=c.Size;
 		}
-		Size=c.Size;
 		return *this;
 	}
 
@@ -198,15 +206,20 @@ public:
     void add(int index, const T& element) {
 		if (index<0||index>Size) {
 			throw IndexOutOfBound("\nIndex Out Of Bound\n");
+		} else if (Size==0) {
+			front=rear=new node(element,NULL,NULL);
+			++Size;
 		} else if (index==0) {
 			addFirst(element);
+		} else if (index==Size) {
+			addLast(element);
 		} else {
 			node *tmp=front;
 			for (int i=1; i<index; ++i) {
 				tmp=tmp->next;
 			}
 			node *cur=new node(element,tmp,tmp->next);
-			if (tmp->next!=NULL) tmp->next->pre=cur;
+			tmp->next->pre=cur;
 			tmp->next=cur;
 			++Size;
 		}
@@ -333,7 +346,11 @@ public:
 		if (front==NULL) throw ElementNotExist("\nElement Not Exist\n");
 		node *tmp=front;
 		front=front->next;
-		if (front!=NULL) front->pre=NULL;
+		if (front!=NULL) {
+			front->pre=NULL;
+		} else {
+			rear=NULL;
+		}
 		delete tmp;
 		--Size;
 	}
@@ -346,7 +363,11 @@ public:
 		if (rear==NULL) throw ElementNotExist("\nElement Not Exist\n");
 		node *tmp=rear;
 		rear=rear->pre;
-		if (rear!=NULL) rear->next=NULL;
+		if (rear!=NULL) {
+			rear->next=NULL;
+		} else {
+			front=NULL;
+		}
 		delete tmp;
 		--Size;
 	}
