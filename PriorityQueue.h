@@ -140,20 +140,20 @@ public:
 			if (last==-1) throw ElementNotExist("\nElement Not Exist\n");
 			int i=last;
 			while (i*2+1<a->data.Size) {
-				if (i*2+2>=a->data.Size||a->tag.elem[i*2+2]==0||a->cmp(a->data.elem[i*2+1],a->data.elem[i*2+2])) {
+				if (a->tag.elem[i*2+1]&&(i*2+2>=a->data.Size||a->tag.elem[i*2+2]==0||a->cmp(a->data.elem[i*2+1],a->data.elem[i*2+2]))) {
 					swap1(a->data.elem[i],a->data.elem[i*2+1]);
 					swap2(a->tag.elem[i],a->tag.elem[i*2+1]);
 					i=i*2+1;
-				} else {
+				} else if (i*2+2<a->data.Size&&a->tag.elem[i*2+2]) {
 					swap1(a->data.elem[i],a->data.elem[i*2+2]);
 					swap2(a->tag.elem[i],a->tag.elem[i*2+2]);
 					i=i*2+2;
-				}
+				} else break;
 			}
 			a->tag.elem[i]=0;
 			--a->Size;
+			if (i>last) --pos;
 			last=-1;
-			--pos;
 		}
     };
 
@@ -178,11 +178,13 @@ public:
      * TODO Assignment operator
      */
     PriorityQueue &operator=(const PriorityQueue &x) {
-		data.clear();
-		data=x.data;
-		tag.clear();
-		tag=x.tag;
-		Size=x.Size;
+		if (this!=&x) {
+			data.clear();
+			data=x.data;
+			tag.clear();
+			tag=x.tag;
+			Size=x.Size;
+		}
 		return *this;
 	}
 
