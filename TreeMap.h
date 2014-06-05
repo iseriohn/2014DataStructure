@@ -246,10 +246,12 @@ public:
      * TODO Assignment operator
      */
     TreeMap &operator=(const TreeMap &x) {
-		if (root!=NULL) clean(root);
-		root=NULL;
-		if (x.root!=NULL) dfs(root,x.root);
-		Size=x.Size;
+		if (this!=&x) {
+			if (root!=NULL) clean(root);
+			root=NULL;
+			if (x.root!=NULL) dfs(root,x.root);
+			Size=x.Size;
+		}
 		return *this;
 	}
 
